@@ -1,355 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Family Sick Calendar</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+<title>Family Sick Tracker</title>
 
-    body {
-      margin: 0;
-      background: #f4f6f8;
-      color: #222;
-      padding: 30px;
-    }
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
+  body {
+    margin: 0;
+    background: #f5f7fa;
+    color: #222;
+    padding: 25px;
+  }
 
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
-    }
+  h1 {
+    text-align: center;
+    margin-bottom: 8px;
+  }
 
-    .top-bar {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+  }
 
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
+  .card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+  }
 
-    .controls {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-    }
+  .section-title {
+    margin-top: 0;
+    margin-bottom: 18px;
+  }
 
-    input, select, button {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+  .flex {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-    button {
-      cursor: pointer;
-      border: none;
-      background: #222;
-      color: white;
-      transition: 0.2s;
-    }
+  input, select, button {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
 
-    button:hover {
-      opacity: 0.9;
-    }
+  button {
+    background: #111827;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
 
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
+  button:hover {
+    opacity: 0.92;
+  }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: white;
-      padding: 10px 14px;
-      border-radius: 999px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+  .members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 
-    .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-    }
+  .member-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: bold;
+  }
 
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-    }
+  .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+  }
 
-    .day-name {
-      font-weight: bold;
-      text-align: center;
-      padding: 10px;
-    }
+  .months {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    gap: 20px;
+  }
 
-    .day {
-      background: white;
-      min-height: 120px;
-      border-radius: 14px;
-      padding: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-      position: relative;
-    }
+  .month {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+  }
 
-    .day-number {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
+  .month h3 {
+    margin-top: 0;
+  }
 
-    .sick-entry {
-      color: white;
-      padding: 5px 8px;
-      border-radius: 8px;
-      margin-bottom: 5px;
-      font-size: 12px;
-      font-weight: bold;
-    }
+  .entry {
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+  }
 
-    .scoreboard {
-      margin-top: 35px;
-    }
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 15px;
+  }
 
-    .scoreboard h2 {
-      margin-bottom: 15px;
-    }
+  .analytic-box {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+  }
 
-    .score-item {
-      background: white;
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+  .analytic-label {
+    color: #666;
+    margin-bottom: 8px;
+  }
 
-    .score-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: bold;
-    }
+  .analytic-value {
+    font-size: 28px;
+    font-weight: bold;
+  }
 
-    @media (max-width: 900px) {
-      .calendar {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .calendar {
-        grid-template-columns: 1fr;
-      }
-
-      .day-name {
-        display: none;
-      }
-    }
-  </style>
+</style>
 </head>
+
 <body>
 
-  <h1>🤒 Family Sick Calendar</h1>
-  <div class="subtitle">
-    Track who gets sick the most throughout the year.
+<h1>🤒 Family Sick Tracker</h1>
+<div class="subtitle">
+Track illness trends throughout the year.
+</div>
+
+<div class="card">
+  <h2 class="section-title">Create Family Member</h2>
+
+  <div class="flex">
+    <input type="text" id="memberName" placeholder="Family member name"/>
+
+    <input type="color" id="memberColor" value="#ff0000"/>
+
+    <button onclick="addMember()">Add Member</button>
   </div>
 
-  <div class="card top-bar">
-    <div class="controls">
-      <select id="person">
-        <option value="Mum">Mum</option>
-        <option value="Dad">Dad</option>
-        <option value="Sarah">Sarah</option>
-        <option value="Ben">Ben</option>
-      </select>
+  <br>
 
-      <input type="date" id="date" />
+  <div class="members" id="members"></div>
+</div>
 
-      <input type="text" id="note" placeholder="Illness / notes" />
+<div class="card">
+  <h2 class="section-title">Add Sick Period</h2>
 
-      <button onclick="addSickDay()">Add Sick Day</button>
-    </div>
+  <div class="flex">
+
+    <select id="personSelect"></select>
+
+    <input type="date" id="startDate"/>
+
+    <input type="date" id="endDate"/>
+
+    <input type="text" id="illness" placeholder="Cold, Flu, Gastro..."/>
+
+    <button onclick="addSickPeriod()">Add Sick Range</button>
+
+  </div>
+</div>
+
+<h2>📊 Analytics</h2>
+
+<div class="analytics-grid">
+
+  <div class="analytic-box">
+    <div class="analytic-label">Most Sick</div>
+    <div class="analytic-value" id="mostSick">-</div>
   </div>
 
-  <div class="legend" id="legend"></div>
-
-  <div class="calendar-container">
-    <div class="calendar" id="calendar"></div>
+  <div class="analytic-box">
+    <div class="analytic-label">Least Sick</div>
+    <div class="analytic-value" id="leastSick">-</div>
   </div>
 
-  <div class="scoreboard">
-    <h2>🏆 Sick Leaderboard</h2>
-    <div id="scoreboard"></div>
+  <div class="analytic-box">
+    <div class="analytic-label">Total Sick Days</div>
+    <div class="analytic-value" id="totalDays">0</div>
   </div>
 
-  <script>
-    const people = {
-      "Mum": "#e63946",
-      "Dad": "#457b9d",
-      "Sarah": "#2a9d8f",
-      "Ben": "#f4a261"
-    };
+</div>
 
-    let sickData = JSON.parse(localStorage.getItem("sickData")) || [];
+<br><br>
 
-    const calendar = document.getElementById("calendar");
-    const legend = document.getElementById("legend");
-    const scoreboard = document.getElementById("scoreboard");
+<h2>🗓️ Year Overview</h2>
 
-    function renderLegend() {
-      legend.innerHTML = "";
+<div class="months" id="months"></div>
 
-      Object.entries(people).forEach(([name, color]) => {
-        const item = document.createElement("div");
-        item.className = "legend-item";
+<script>
 
-        item.innerHTML = `
-          <div class="dot" style="background:${color}"></div>
-          <span>${name}</span>
-        `;
+let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || [];
 
-        legend.appendChild(item);
-      });
+let sickEntries = JSON.parse(localStorage.getItem("sickEntries")) || [];
+
+const monthNames = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+function saveData() {
+  localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+  localStorage.setItem("sickEntries", JSON.stringify(sickEntries));
+}
+
+function addMember() {
+
+  const name = document.getElementById("memberName").value.trim();
+  const color = document.getElementById("memberColor").value;
+
+  if (!name) {
+    alert("Please enter a name.");
+    return;
+  }
+
+  familyMembers.push({
+    name,
+    color
+  });
+
+  saveData();
+
+  document.getElementById("memberName").value = "";
+
+  renderMembers();
+  renderSelect();
+  renderAnalytics();
+}
+
+function renderMembers() {
+
+  const container = document.getElementById("members");
+
+  container.innerHTML = "";
+
+  familyMembers.forEach(member => {
+
+    const div = document.createElement("div");
+
+    div.className = "member-pill";
+
+    div.innerHTML = `
+      <div class="dot" style="background:${member.color}"></div>
+      ${member.name}
+    `;
+
+    container.appendChild(div);
+
+  });
+
+}
+
+function renderSelect() {
+
+  const select = document.getElementById("personSelect");
+
+  select.innerHTML = "";
+
+  familyMembers.forEach(member => {
+
+    const option = document.createElement("option");
+
+    option.value = member.name;
+    option.textContent = member.name;
+
+    select.appendChild(option);
+
+  });
+
+}
+
+function addSickPeriod() {
+
+  const person = document.getElementById("personSelect").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const illness = document.getElementById("illness").value;
+
+  if (!person || !startDate || !endDate) {
+    alert("Please complete all fields.");
+    return;
+  }
+
+  sickEntries.push({
+    person,
+    startDate,
+    endDate,
+    illness
+  });
+
+  saveData();
+
+  renderMonths();
+  renderAnalytics();
+
+}
+
+function renderMonths() {
+
+  const container = document.getElementById("months");
+
+  container.innerHTML = "";
+
+  for (let month = 0; month < 12; month++) {
+
+    const monthDiv = document.createElement("div");
+
+    monthDiv.className = "month";
+
+    let html = `<h3>${monthNames[month]}</h3>`;
+
+    const filtered = sickEntries.filter(entry => {
+
+      const entryMonth = new Date(entry.startDate).getMonth();
+
+      return entryMonth === month;
+
+    });
+
+    if (filtered.length === 0) {
+      html += `<p style="color:#777;">No sickness recorded.</p>`;
     }
 
-    function renderCalendar() {
-      calendar.innerHTML = "";
+    filtered.forEach(entry => {
 
-      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const member = familyMembers.find(m => m.name === entry.person);
 
-      dayNames.forEach(day => {
-        const d = document.createElement("div");
-        d.className = "day-name";
-        d.textContent = day;
-        calendar.appendChild(d);
-      });
+      const start = new Date(entry.startDate);
+      const end = new Date(entry.endDate);
 
-      const year = new Date().getFullYear();
+      const days =
+        Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-      for (let month = 0; month < 12; month++) {
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+      html += `
+        <div class="entry" style="background:${member?.color || "#333"}">
+          ${entry.person}<br>
+          ${entry.startDate} → ${entry.endDate}<br>
+          ${days} day(s)<br>
+          ${entry.illness || ""}
+        </div>
+      `;
 
-        for (let day = 1; day <= daysInMonth; day++) {
-          const dateString = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    });
 
-          const dayBox = document.createElement("div");
-          dayBox.className = "day";
+    monthDiv.innerHTML = html;
 
-          const entries = sickData.filter(entry => entry.date === dateString);
+    container.appendChild(monthDiv);
 
-          dayBox.innerHTML = `
-            <div class="day-number">
-              ${day}/${month + 1}
-            </div>
-          `;
+  }
 
-          entries.forEach(entry => {
-            const tag = document.createElement("div");
-            tag.className = "sick-entry";
-            tag.style.background = people[entry.person];
+}
 
-            tag.innerHTML = `
-              ${entry.person}
-              ${entry.note ? "— " + entry.note : ""}
-            `;
+function renderAnalytics() {
 
-            dayBox.appendChild(tag);
-          });
+  let totals = {};
 
-          calendar.appendChild(dayBox);
-        }
-      }
-    }
+  familyMembers.forEach(member => {
+    totals[member.name] = 0;
+  });
 
-    function renderScoreboard() {
-      scoreboard.innerHTML = "";
+  sickEntries.forEach(entry => {
 
-      const counts = {};
+    const start = new Date(entry.startDate);
+    const end = new Date(entry.endDate);
 
-      Object.keys(people).forEach(person => {
-        counts[person] = 0;
-      });
+    const days =
+      Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-      sickData.forEach(entry => {
-        counts[entry.person]++;
-      });
+    totals[entry.person] += days;
 
-      const sorted = Object.entries(counts)
-        .sort((a,b) => b[1] - a[1]);
+  });
 
-      sorted.forEach(([person, total]) => {
-        const row = document.createElement("div");
-        row.className = "score-item";
+  const sorted = Object.entries(totals)
+    .sort((a,b) => b[1] - a[1]);
 
-        row.innerHTML = `
-          <div class="score-left">
-            <div class="dot" style="background:${people[person]}"></div>
-            ${person}
-          </div>
+  if (sorted.length > 0) {
 
-          <div>
-            ${total} sick day${total !== 1 ? "s" : ""}
-          </div>
-        `;
+    document.getElementById("mostSick").innerHTML =
+      `${sorted[0][0]} (${sorted[0][1]} days)`;
 
-        scoreboard.appendChild(row);
-      });
-    }
+    document.getElementById("leastSick").innerHTML =
+      `${sorted[sorted.length - 1][0]} (${sorted[sorted.length - 1][1]} days)`;
 
-    function addSickDay() {
-      const person = document.getElementById("person").value;
-      const date = document.getElementById("date").value;
-      const note = document.getElementById("note").value;
+  }
 
-      if (!date) {
-        alert("Please select a date.");
-        return;
-      }
+  const total = Object.values(totals)
+    .reduce((a,b) => a+b,0);
 
-      sickData.push({
-        person,
-        date,
-        note
-      });
+  document.getElementById("totalDays").innerHTML = total;
 
-      localStorage.setItem("sickData", JSON.stringify(sickData));
+}
 
-      renderCalendar();
-      renderScoreboard();
+renderMembers();
+renderSelect();
+renderMonths();
+renderAnalytics();
 
-      document.getElementById("note").value = "";
-    }
-
-    renderLegend();
-    renderCalendar();
-    renderScoreboard();
-  </script>
+</script>
 
 </body>
 </html>
