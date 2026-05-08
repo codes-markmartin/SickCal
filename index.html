@@ -6,138 +6,152 @@
 
 <title>Family Sick Tracker</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-  * {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-  }
 
-  body {
-    margin: 0;
-    background: #f5f7fa;
-    color: #222;
-    padding: 25px;
-  }
+*{
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
+}
 
-  h1 {
-    text-align: center;
-    margin-bottom: 8px;
-  }
+body{
+  margin:0;
+  background:#f4f7fb;
+  color:#222;
+  padding:25px;
+}
 
-  .subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-  }
+h1{
+  text-align:center;
+  margin-bottom:8px;
+}
 
-  .card {
-    background: white;
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
-  }
+.subtitle{
+  text-align:center;
+  color:#666;
+  margin-bottom:30px;
+}
 
-  .section-title {
-    margin-top: 0;
-    margin-bottom: 18px;
-  }
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+}
 
-  .flex {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+.section-title{
+  margin-top:0;
+  margin-bottom:18px;
+}
 
-  input, select, button {
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
+.flex{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+}
 
-  button {
-    background: #111827;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
+input, select, button{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
 
-  button:hover {
-    opacity: 0.92;
-  }
+button{
+  border:none;
+  background:#111827;
+  color:white;
+  cursor:pointer;
+}
 
-  .members {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+button:hover{
+  opacity:0.92;
+}
 
-  .member-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f1f1f1;
-    border-radius: 999px;
-    padding: 10px 14px;
-    font-weight: bold;
-  }
+.members{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
 
-  .dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-  }
+.member-pill{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#f1f1f1;
+  padding:10px 14px;
+  border-radius:999px;
+  font-weight:bold;
+}
 
-  .months {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
-    gap: 20px;
-  }
+.dot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+}
 
-  .month {
-    background: white;
-    border-radius: 18px;
-    padding: 18px;
-    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
-  }
+.analytics-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+}
 
-  .month h3 {
-    margin-top: 0;
-  }
+.analytics-box{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+}
 
-  .entry {
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: bold;
-  }
+.analytic-label{
+  color:#666;
+  margin-bottom:8px;
+}
 
-  .analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-    gap: 15px;
-  }
+.analytic-value{
+  font-size:28px;
+  font-weight:bold;
+}
 
-  .analytic-box {
-    background: white;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
-  }
+.months{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+}
 
-  .analytic-label {
-    color: #666;
-    margin-bottom: 8px;
-  }
+.month{
+  background:white;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+}
 
-  .analytic-value {
-    font-size: 28px;
-    font-weight: bold;
-  }
+.month h3{
+  margin-top:0;
+}
+
+.entry{
+  color:white;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-weight:bold;
+  line-height:1.5;
+}
+
+.small{
+  font-size:13px;
+  opacity:0.95;
+}
+
+.status{
+  text-align:center;
+  margin-bottom:18px;
+  color:#666;
+}
 
 </style>
 </head>
@@ -145,27 +159,47 @@
 <body>
 
 <h1>🤒 Family Sick Tracker</h1>
+
 <div class="subtitle">
-Track illness trends throughout the year.
+Track sickness patterns across the family throughout the year.
+</div>
+
+<div class="status" id="status">
+Connecting to Supabase...
 </div>
 
 <div class="card">
+
   <h2 class="section-title">Create Family Member</h2>
 
   <div class="flex">
-    <input type="text" id="memberName" placeholder="Family member name"/>
 
-    <input type="color" id="memberColor" value="#ff0000"/>
+    <input
+      type="text"
+      id="memberName"
+      placeholder="Family member name"
+    />
 
-    <button onclick="addMember()">Add Member</button>
+    <input
+      type="color"
+      id="memberColor"
+      value="#ff0000"
+    />
+
+    <button onclick="addMember()">
+      Add Member
+    </button>
+
   </div>
 
   <br>
 
   <div class="members" id="members"></div>
+
 </div>
 
 <div class="card">
+
   <h2 class="section-title">Add Sick Period</h2>
 
   <div class="flex">
@@ -176,28 +210,35 @@ Track illness trends throughout the year.
 
     <input type="date" id="endDate"/>
 
-    <input type="text" id="illness" placeholder="Cold, Flu, Gastro..."/>
+    <input
+      type="text"
+      id="illness"
+      placeholder="Cold, Flu, Gastro..."
+    />
 
-    <button onclick="addSickPeriod()">Add Sick Range</button>
+    <button onclick="addSickPeriod()">
+      Add Sick Range
+    </button>
 
   </div>
+
 </div>
 
 <h2>📊 Analytics</h2>
 
 <div class="analytics-grid">
 
-  <div class="analytic-box">
+  <div class="analytics-box">
     <div class="analytic-label">Most Sick</div>
     <div class="analytic-value" id="mostSick">-</div>
   </div>
 
-  <div class="analytic-box">
+  <div class="analytics-box">
     <div class="analytic-label">Least Sick</div>
     <div class="analytic-value" id="leastSick">-</div>
   </div>
 
-  <div class="analytic-box">
+  <div class="analytics-box">
     <div class="analytic-label">Total Sick Days</div>
     <div class="analytic-value" id="totalDays">0</div>
   </div>
@@ -212,47 +253,211 @@ Track illness trends throughout the year.
 
 <script>
 
-let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || [];
+/* =========================
+   SUPABASE CONFIG
+========================= */
 
-let sickEntries = JSON.parse(localStorage.getItem("sickEntries")) || [];
+const SUPABASE_URL =
+  "https://dakljrkkjakylnryofia.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+
+/*
+Get this from:
+Supabase Dashboard
+→ Settings
+→ API
+→ anon public key
+*/
+
+const supabase =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+/* =========================
+   GLOBAL STATE
+========================= */
+
+let familyMembers = [];
+let sickEntries = [];
 
 const monthNames = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "January","February","March","April",
+  "May","June","July","August",
+  "September","October","November","December"
 ];
 
-function saveData() {
-  localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-  localStorage.setItem("sickEntries", JSON.stringify(sickEntries));
+/* =========================
+   INIT
+========================= */
+
+init();
+
+async function init(){
+
+  await loadMembers();
+
+  await loadEntries();
+
+  renderMembers();
+
+  renderSelect();
+
+  renderMonths();
+
+  renderAnalytics();
+
+  document.getElementById("status").innerHTML =
+    "✅ Connected to shared family database";
+
 }
 
-function addMember() {
+/* =========================
+   LOAD DATA
+========================= */
 
-  const name = document.getElementById("memberName").value.trim();
-  const color = document.getElementById("memberColor").value;
+async function loadMembers(){
 
-  if (!name) {
+  const { data, error } =
+    await supabase
+      .from("family_members")
+      .select("*")
+      .order("name");
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  familyMembers = data || [];
+
+}
+
+async function loadEntries(){
+
+  const { data, error } =
+    await supabase
+      .from("sick_entries")
+      .select("*")
+      .order("start_date", { ascending:false });
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  sickEntries = data || [];
+
+}
+
+/* =========================
+   ADD MEMBER
+========================= */
+
+async function addMember(){
+
+  const name =
+    document.getElementById("memberName")
+      .value
+      .trim();
+
+  const color =
+    document.getElementById("memberColor")
+      .value;
+
+  if(!name){
     alert("Please enter a name.");
     return;
   }
 
-  familyMembers.push({
-    name,
-    color
-  });
+  const { error } =
+    await supabase
+      .from("family_members")
+      .insert([
+        {
+          name,
+          color
+        }
+      ]);
 
-  saveData();
+  if(error){
+    alert(error.message);
+    return;
+  }
 
   document.getElementById("memberName").value = "";
 
+  await loadMembers();
+
   renderMembers();
+
   renderSelect();
+
   renderAnalytics();
+
 }
 
-function renderMembers() {
+/* =========================
+   ADD SICK PERIOD
+========================= */
 
-  const container = document.getElementById("members");
+async function addSickPeriod(){
+
+  const person =
+    document.getElementById("personSelect").value;
+
+  const startDate =
+    document.getElementById("startDate").value;
+
+  const endDate =
+    document.getElementById("endDate").value;
+
+  const illness =
+    document.getElementById("illness").value;
+
+  if(!person || !startDate || !endDate){
+    alert("Please complete all fields.");
+    return;
+  }
+
+  const { error } =
+    await supabase
+      .from("sick_entries")
+      .insert([
+        {
+          person,
+          illness,
+          start_date:startDate,
+          end_date:endDate
+        }
+      ]);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  document.getElementById("illness").value = "";
+
+  await loadEntries();
+
+  renderMonths();
+
+  renderAnalytics();
+
+}
+
+/* =========================
+   RENDER MEMBERS
+========================= */
+
+function renderMembers(){
+
+  const container =
+    document.getElementById("members");
 
   container.innerHTML = "";
 
@@ -263,7 +468,11 @@ function renderMembers() {
     div.className = "member-pill";
 
     div.innerHTML = `
-      <div class="dot" style="background:${member.color}"></div>
+      <div
+        class="dot"
+        style="background:${member.color}"
+      ></div>
+
       ${member.name}
     `;
 
@@ -273,17 +482,24 @@ function renderMembers() {
 
 }
 
-function renderSelect() {
+/* =========================
+   RENDER SELECT
+========================= */
 
-  const select = document.getElementById("personSelect");
+function renderSelect(){
+
+  const select =
+    document.getElementById("personSelect");
 
   select.innerHTML = "";
 
   familyMembers.forEach(member => {
 
-    const option = document.createElement("option");
+    const option =
+      document.createElement("option");
 
     option.value = member.name;
+
     option.textContent = member.name;
 
     select.appendChild(option);
@@ -292,74 +508,90 @@ function renderSelect() {
 
 }
 
-function addSickPeriod() {
+/* =========================
+   RENDER MONTHS
+========================= */
 
-  const person = document.getElementById("personSelect").value;
-  const startDate = document.getElementById("startDate").value;
-  const endDate = document.getElementById("endDate").value;
-  const illness = document.getElementById("illness").value;
+function renderMonths(){
 
-  if (!person || !startDate || !endDate) {
-    alert("Please complete all fields.");
-    return;
-  }
-
-  sickEntries.push({
-    person,
-    startDate,
-    endDate,
-    illness
-  });
-
-  saveData();
-
-  renderMonths();
-  renderAnalytics();
-
-}
-
-function renderMonths() {
-
-  const container = document.getElementById("months");
+  const container =
+    document.getElementById("months");
 
   container.innerHTML = "";
 
-  for (let month = 0; month < 12; month++) {
+  for(let month=0; month<12; month++){
 
-    const monthDiv = document.createElement("div");
+    const monthDiv =
+      document.createElement("div");
 
     monthDiv.className = "month";
 
     let html = `<h3>${monthNames[month]}</h3>`;
 
-    const filtered = sickEntries.filter(entry => {
+    const filtered =
+      sickEntries.filter(entry => {
 
-      const entryMonth = new Date(entry.startDate).getMonth();
+        const entryMonth =
+          new Date(entry.start_date)
+            .getMonth();
 
-      return entryMonth === month;
+        return entryMonth === month;
 
-    });
+      });
 
-    if (filtered.length === 0) {
-      html += `<p style="color:#777;">No sickness recorded.</p>`;
+    if(filtered.length === 0){
+
+      html += `
+        <p style="color:#777;">
+          No sickness recorded.
+        </p>
+      `;
+
     }
 
     filtered.forEach(entry => {
 
-      const member = familyMembers.find(m => m.name === entry.person);
+      const member =
+        familyMembers.find(
+          m => m.name === entry.person
+        );
 
-      const start = new Date(entry.startDate);
-      const end = new Date(entry.endDate);
+      const start =
+        new Date(entry.start_date);
+
+      const end =
+        new Date(entry.end_date);
 
       const days =
-        Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        Math.floor(
+          (end - start)
+          / (1000*60*60*24)
+        ) + 1;
 
       html += `
-        <div class="entry" style="background:${member?.color || "#333"}">
-          ${entry.person}<br>
-          ${entry.startDate} → ${entry.endDate}<br>
-          ${days} day(s)<br>
-          ${entry.illness || ""}
+        <div
+          class="entry"
+          style="background:${member?.color || "#333"}"
+        >
+
+          ${entry.person}
+
+          <div class="small">
+            ${entry.start_date}
+            →
+            ${entry.end_date}
+          </div>
+
+          <div class="small">
+            ${days} sick day(s)
+          </div>
+
+          ${
+            entry.illness
+            ? `<div class="small">${entry.illness}</div>`
+            : ""
+          }
+
         </div>
       `;
 
@@ -373,7 +605,11 @@ function renderMonths() {
 
 }
 
-function renderAnalytics() {
+/* =========================
+   ANALYTICS
+========================= */
+
+function renderAnalytics(){
 
   let totals = {};
 
@@ -383,40 +619,47 @@ function renderAnalytics() {
 
   sickEntries.forEach(entry => {
 
-    const start = new Date(entry.startDate);
-    const end = new Date(entry.endDate);
+    const start =
+      new Date(entry.start_date);
+
+    const end =
+      new Date(entry.end_date);
 
     const days =
-      Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      Math.floor(
+        (end - start)
+        / (1000*60*60*24)
+      ) + 1;
 
     totals[entry.person] += days;
 
   });
 
-  const sorted = Object.entries(totals)
-    .sort((a,b) => b[1] - a[1]);
+  const sorted =
+    Object.entries(totals)
+      .sort((a,b)=>b[1]-a[1]);
 
-  if (sorted.length > 0) {
+  if(sorted.length > 0){
 
-    document.getElementById("mostSick").innerHTML =
+    document.getElementById("mostSick")
+      .innerHTML =
       `${sorted[0][0]} (${sorted[0][1]} days)`;
 
-    document.getElementById("leastSick").innerHTML =
-      `${sorted[sorted.length - 1][0]} (${sorted[sorted.length - 1][1]} days)`;
+    document.getElementById("leastSick")
+      .innerHTML =
+      `${sorted[sorted.length-1][0]}
+       (${sorted[sorted.length-1][1]} days)`;
 
   }
 
-  const total = Object.values(totals)
-    .reduce((a,b) => a+b,0);
+  const total =
+    Object.values(totals)
+      .reduce((a,b)=>a+b,0);
 
-  document.getElementById("totalDays").innerHTML = total;
+  document.getElementById("totalDays")
+    .innerHTML = total;
 
 }
-
-renderMembers();
-renderSelect();
-renderMonths();
-renderAnalytics();
 
 </script>
 
