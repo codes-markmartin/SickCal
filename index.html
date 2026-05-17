@@ -1,678 +1,1059 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>Family Sick Tracker</title>
-
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-
-const SUPABASE_URL = "https://dakljrkkjakylnryofia.supabase.co/rest/v1/";
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
-
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-  
-</script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RWC 2027 Ticket Planner 🏉</title>
 <style>
-
-*{
-  box-sizing:border-box;
-  font-family:Arial, Helvetica, sans-serif;
+:root {
+  --gold: #C9A84C; --dark: #111827; --card: #1f2937;
+  --border: #374151; --green: #065f46; --light: #f1f5f9;
+  --muted: #9ca3af; --sa: #007A4D; --aus: #d4a017;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); color: var(--light); min-height: 100vh; }
 
-body{
-  margin:0;
-  background:#f4f7fb;
-  color:#222;
-  padding:25px;
+header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-bottom: 3px solid var(--gold);
+  padding: 20px 24px; text-align: center;
 }
+header h1 { font-size: 1.7rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
+header p { color: var(--muted); margin-top: 5px; font-size: 0.85rem; }
 
-h1{
-  text-align:center;
-  margin-bottom:8px;
+.progress-bar {
+  display: flex; justify-content: center; gap: 0;
+  background: #0f172a; border-bottom: 1px solid var(--border);
+  padding: 0; overflow-x: auto;
 }
-
-.subtitle{
-  text-align:center;
-  color:#666;
-  margin-bottom:30px;
+.step-indicator {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 12px 14px; cursor: pointer; position: relative;
+  border-bottom: 3px solid transparent; transition: all 0.2s; min-width: 80px;
 }
-
-.card{
-  background:white;
-  border-radius:18px;
-  padding:20px;
-  margin-bottom:20px;
-  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+.step-indicator:hover { background: rgba(201,168,76,0.07); }
+.step-indicator.active { border-bottom-color: var(--gold); }
+.step-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--border); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: bold; transition: all 0.2s;
 }
+.step-indicator.active .step-dot { background: var(--gold); color: #111; }
+.step-indicator.done .step-dot { background: #10b981; color: white; }
+.step-label { font-size: 0.65rem; color: var(--muted); text-align: center; }
+.step-indicator.active .step-label { color: var(--gold); }
 
-.section-title{
-  margin-top:0;
-  margin-bottom:18px;
+main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+.step-page { display: none; }
+.step-page.active { display: block; }
+
+h2 { font-size: 1.4rem; color: var(--gold); margin-bottom: 6px; }
+.subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+
+.legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 18px; font-size: 0.78rem;
 }
+.legend-item { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-.flex{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  align-items:center;
+.pools-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px; margin-bottom: 24px;
 }
-
-input, select, button{
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  font-size:14px;
+.pool-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.pool-header {
+  background: #111827; padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
 }
-
-button{
-  border:none;
-  background:#111827;
-  color:white;
-  cursor:pointer;
+.pool-letter {
+  width: 26px; height: 26px; background: var(--gold); color: #111;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-weight: bold; font-size: 0.85rem;
 }
+.pool-header span { font-weight: 600; font-size: 0.9rem; }
+.pool-list { padding: 8px; }
 
-button:hover{
-  opacity:0.92;
+.team-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 9px; border-radius: 8px; margin-bottom: 4px;
+  background: rgba(255,255,255,0.03); border: 1.5px solid transparent;
+  cursor: grab; user-select: none; transition: all 0.15s;
 }
+.team-row:last-child { margin-bottom: 0; }
+.team-row.dragging { opacity: 0.4; }
+.team-row.drag-over { background: rgba(201,168,76,0.12); border-color: var(--gold); }
+.team-row.sa-team { border-left: 3px solid var(--sa); }
+.team-row.aus-team { border-left: 3px solid var(--aus); }
 
-.members{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
+.rank-badge {
+  width: 21px; height: 21px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: bold; flex-shrink: 0;
 }
+.rank-1 { background: #ca8a04; color: #fff; }
+.rank-2 { background: #6b7280; color: #fff; }
+.rank-3 { background: #92400e; color: #fbbf24; }
+.rank-4 { background: #1f2937; color: #6b7280; }
 
-.member-pill{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  background:#f1f1f1;
-  padding:10px 14px;
-  border-radius:999px;
-  font-weight:bold;
+.qual-badge {
+  font-size: 0.6rem; padding: 2px 5px; border-radius: 4px;
+  font-weight: bold; white-space: nowrap;
 }
+.q-auto { background: #064e3b; color: #6ee7b7; }
+.q-maybe { background: #78350f; color: #fcd34d; }
+.q-out { background: #1f2937; color: #4b5563; }
 
-.dot{
-  width:16px;
-  height:16px;
-  border-radius:50%;
+.move-btns { display: flex; flex-direction: column; gap: 1px; }
+.move-btn {
+  width: 17px; height: 17px; background: #374151; border: none;
+  color: var(--muted); cursor: pointer; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; transition: background 0.1s; line-height: 1;
 }
+.move-btn:hover:not(:disabled) { background: var(--gold); color: #111; }
+.move-btn:disabled { opacity: 0.3; cursor: default; }
+.team-flag { font-size: 1.2rem; flex-shrink: 0; }
+.team-name { flex: 1; font-size: 0.85rem; }
 
-.analytics-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
+.info-box {
+  background: rgba(30,58,95,0.4); border: 1px solid #1e3a5f;
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;
+  font-size: 0.85rem; color: var(--muted); line-height: 1.6;
 }
+.info-box strong { color: var(--light); }
 
-.analytics-box{
-  background:white;
-  border-radius:18px;
-  padding:20px;
-  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+.third-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  gap: 12px; margin-bottom: 24px;
 }
-
-.analytic-label{
-  color:#666;
-  margin-bottom:8px;
+.third-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 12px; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; gap: 10px;
 }
+.third-card:hover:not(.disabled) { border-color: var(--gold); }
+.third-card.selected { border-color: #10b981; background: rgba(6,95,70,0.2); }
+.third-card.disabled { opacity: 0.45; cursor: not-allowed; }
+.third-card .tinfo { flex: 1; }
+.third-card .tpool { font-size: 0.7rem; color: var(--muted); }
+.third-card .tname { font-size: 0.88rem; font-weight: 600; margin-top: 1px; }
+.check-icon { width: 20px; height: 20px; flex-shrink: 0; display: none; }
+.third-card.selected .check-icon { display: block; }
+.third-counter { font-size: 0.88rem; color: var(--muted); margin-bottom: 14px; }
 
-.analytic-value{
-  font-size:28px;
-  font-weight:bold;
+.matches-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px; margin-bottom: 24px;
 }
-
-.months{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:20px;
+.match-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
 }
-
-.month{
-  background:white;
-  border-radius:18px;
-  padding:18px;
-  box-shadow:0 5px 16px rgba(0,0,0,0.08);
+.match-card.brisbane-game { border-top: 3px solid var(--gold); }
+.match-header {
+  background: #0f172a; padding: 8px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.73rem; color: var(--muted); border-bottom: 1px solid var(--border);
 }
+.match-id { color: var(--gold); font-weight: bold; font-size: 0.8rem; }
+.match-teams { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 
-.month h3{
-  margin-top:0;
+.team-btn {
+  display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+  border-radius: 8px; border: 2px solid var(--border);
+  background: rgba(255,255,255,0.03); cursor: pointer; transition: all 0.2s;
+  text-align: left; color: var(--light); font-size: 0.88rem; width: 100%;
 }
+.team-btn:hover:not(.tbd) { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+.team-btn.selected { border-color: #10b981; background: rgba(6,95,70,0.25); }
+.team-btn.tbd { color: #4b5563; cursor: default; }
+.vs-div { text-align: center; color: #4b5563; font-size: 0.75rem; font-weight: bold; }
 
-.entry{
-  color:white;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:10px;
-  font-weight:bold;
-  line-height:1.5;
+.tag {
+  font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: auto;
 }
+.sa-tag { background: #064e3b; color: #6ee7b7; }
+.aus-tag { background: #78350f; color: #fcd34d; }
 
-.small{
-  font-size:13px;
-  opacity:0.95;
+.nav-buttons {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);
 }
-
-.status{
-  text-align:center;
-  margin-bottom:18px;
-  color:#666;
+.btn {
+  padding: 11px 26px; border-radius: 8px; font-size: 0.88rem;
+  font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
 }
+.btn-primary { background: var(--gold); color: #111; }
+.btn-primary:hover { background: #e0b84f; }
+.btn-secondary { background: transparent; color: var(--light); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+/* TICKET EXPLORER */
+.journey-banner {
+  background: linear-gradient(135deg, rgba(0,122,77,0.15), rgba(212,160,23,0.12));
+  border: 1px solid rgba(201,168,76,0.3); border-radius: 10px;
+  padding: 14px 18px; margin-bottom: 22px; display: flex; gap: 20px; flex-wrap: wrap;
+}
+.tj { flex: 1; min-width: 200px; }
+.tj h4 { font-size: 0.88rem; margin-bottom: 8px; }
+.sa-col { color: #6ee7b7; }
+.aus-col { color: #fcd34d; }
+.journey-steps { display: flex; gap: 4px; flex-wrap: wrap; }
+.jstep {
+  font-size: 0.72rem; padding: 3px 9px; border-radius: 12px;
+  background: rgba(255,255,255,0.08); color: var(--muted);
+}
+.jstep.won { background: rgba(6,95,70,0.4); color: #6ee7b7; }
+.jstep.out { background: rgba(127,29,29,0.4); color: #fca5a5; text-decoration: line-through; }
+
+.ticket-section { margin-bottom: 30px; }
+.ticket-section h3 {
+  font-size: 1.05rem; color: var(--gold); margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.game-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+}
+.game-card.sa-border { border-color: var(--sa); }
+.game-card.aus-border { border-color: var(--aus); }
+.game-card.gold-border { border-color: var(--gold); }
+.game-top {
+  padding: 12px 16px; display: flex; justify-content: space-between;
+  align-items: flex-start; background: rgba(15,23,42,0.5);
+  border-bottom: 1px solid var(--border); gap: 10px; flex-wrap: wrap;
+}
+.game-matchup { font-size: 0.98rem; font-weight: 600; }
+.game-meta { font-size: 0.73rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.price-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px; padding: 12px 14px;
+}
+.price-tile {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 8px; text-align: center;
+}
+.price-tile.cheapest { border-color: #10b981; background: rgba(6,95,70,0.12); }
+.ptcat { font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
+.ptadult { font-size: 1.05rem; font-weight: bold; color: var(--gold); }
+.ptchild { font-size: 0.72rem; color: #10b981; margin-top: 2px; }
+.ptno { font-size: 0.68rem; color: #4b5563; margin-top: 2px; }
+
+.budget-box {
+  background: rgba(30,58,95,0.35); border: 1px solid #1e3a5f;
+  border-radius: 10px; padding: 16px 20px; margin-top: 20px;
+}
+.budget-box h3 { color: var(--gold); font-size: 1rem; margin-bottom: 10px; }
+.budget-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.85rem; gap: 12px; flex-wrap: wrap;
+}
+.budget-row:last-child { border-bottom: none; }
+.budget-game { color: var(--light); flex: 1; }
+.budget-price { color: var(--gold); font-weight: bold; white-space: nowrap; }
+.budget-note { color: var(--muted); font-size: 0.75rem; }
+
+@media (max-width: 600px) {
+  header h1 { font-size: 1.2rem; }
+  .pools-grid, .matches-grid, .third-grid { grid-template-columns: 1fr; }
+  .step-label { display: none; }
+}
 </style>
 </head>
-
 <body>
 
-<h1>🤒 Family Sick Tracker</h1>
+<header>
+  <div style="font-size:2rem;margin-bottom:6px">🏉</div>
+  <h1>RWC 2027 Ticket Planner</h1>
+  <p>Gold Coast edition · 🇿🇦 Springboks &amp; 🇦🇺 Wallabies fans · Brisbane is 1hr drive, no accommodation needed</p>
+</header>
 
-<div class="subtitle">
-Track sickness patterns across the family throughout the year.
+<nav class="progress-bar" id="progress-bar">
+  <div class="step-indicator active" data-step="1" onclick="goToStep(1)">
+    <div class="step-dot">1</div><div class="step-label">Pool Stage</div>
+  </div>
+  <div class="step-indicator" data-step="2" onclick="goToStep(2)">
+    <div class="step-dot">2</div><div class="step-label">3rd Place</div>
+  </div>
+  <div class="step-indicator" data-step="3" onclick="goToStep(3)">
+    <div class="step-dot">3</div><div class="step-label">Round of 16</div>
+  </div>
+  <div class="step-indicator" data-step="4" onclick="goToStep(4)">
+    <div class="step-dot">4</div><div class="step-label">Quarter Finals</div>
+  </div>
+  <div class="step-indicator" data-step="5" onclick="goToStep(5)">
+    <div class="step-dot">5</div><div class="step-label">Semis &amp; Final</div>
+  </div>
+  <div class="step-indicator" data-step="6" onclick="goToStep(6)">
+    <div class="step-dot">6</div><div class="step-label">🎟️ Tickets</div>
+  </div>
+</nav>
+
+<main>
+
+<!-- STEP 1: POOL PREDICTIONS -->
+<div class="step-page active" id="step-1">
+  <h2>Pool Stage Predictions</h2>
+  <p class="subtitle">Drag teams to reorder or use ▲▼ buttons. Top 2 from each pool auto-qualify. The best 4 third-placed teams (across all 6 pools) also qualify — you'll pick those next.</p>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#ca8a04"></div>1st — Auto-qualify</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>2nd — Auto-qualify</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#92400e"></div>3rd — Possible qualifier</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1f2937"></div>4th — Eliminated</div>
+    <div class="legend-item"><div style="width:10px;height:10px;background:var(--sa);border-radius:2px;flex-shrink:0"></div>🇿🇦 Springboks</div>
+    <div class="legend-item"><div style="width:10px;height:10px;background:var(--aus);border-radius:2px;flex-shrink:0"></div>🇦🇺 Wallabies</div>
+  </div>
+  <div class="pools-grid" id="pools-grid"></div>
+  <div class="nav-buttons">
+    <div></div>
+    <button class="btn btn-primary" onclick="goToStep(2)">Next: 3rd Place Teams →</button>
+  </div>
 </div>
 
-<div class="status" id="status">
-Connecting to Supabase...
+<!-- STEP 2: THIRD PLACE -->
+<div class="step-page" id="step-2">
+  <h2>Best 3rd-Place Teams</h2>
+  <p class="subtitle">Only <strong style="color:var(--gold)">4 of the 6</strong> third-placed teams advance to the Round of 16 — ranked by competition points, then points difference, then tries scored. Select the 4 you predict will qualify.</p>
+  <div class="info-box">
+    <strong>How third-place qualification works (RWC 2027):</strong> After pool play, all 6 third-placed teams are ranked against each other. The 4 with the most competition points qualify. Ties are broken by points difference, then points scored, then tries scored, then World Rugby rankings (as of 18 Oct 2027). This is the first RWC to use this expanded 24-team format.
+  </div>
+  <div class="third-counter" id="third-counter">Select 4 teams — 0 of 4 selected</div>
+  <div class="third-grid" id="third-grid"></div>
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+    <button class="btn btn-primary" id="btn-next-3" disabled onclick="goToStep(3)">Next: Round of 16 →</button>
+  </div>
 </div>
 
-<div class="card">
-
-  <h2 class="section-title">Create Family Member</h2>
-
-  <div class="flex">
-
-    <input
-      type="text"
-      id="memberName"
-      placeholder="Family member name"
-    />
-
-    <input
-      type="color"
-      id="memberColor"
-      value="#ff0000"
-    />
-
-    <button onclick="addMember()">
-      Add Member
-    </button>
-
+<!-- STEP 3: ROUND OF 16 -->
+<div class="step-page" id="step-3">
+  <h2>Round of 16 — Pick Winners</h2>
+  <p class="subtitle">8 matches played 23–24 Oct 2027. Click a team to predict them through. <span style="color:var(--gold)">Gold header</span> = Brisbane game (1hr drive).</p>
+  <div class="matches-grid" id="r16-grid"></div>
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+    <button class="btn btn-primary" onclick="goToStep(4)">Next: Quarter Finals →</button>
   </div>
-
-  <br>
-
-  <div class="members" id="members"></div>
-
 </div>
 
-<div class="card">
-
-  <h2 class="section-title">Add Sick Period</h2>
-
-  <div class="flex">
-
-    <select id="personSelect"></select>
-
-    <input type="date" id="startDate"/>
-
-    <input type="date" id="endDate"/>
-
-    <input
-      type="text"
-      id="illness"
-      placeholder="Cold, Flu, Gastro..."
-    />
-
-    <button onclick="addSickPeriod()">
-      Add Sick Range
-    </button>
-
+<!-- STEP 4: QUARTER FINALS -->
+<div class="step-page" id="step-4">
+  <h2>Quarter Finals — Pick Winners</h2>
+  <p class="subtitle">4 QF matches, 30–31 Oct 2027. <span style="color:var(--gold)">QF2 &amp; QF3</span> are at Brisbane Stadium. QF1 &amp; QF4 are at Stadium Australia, Sydney.</p>
+  <div class="matches-grid" id="qf-grid"></div>
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+    <button class="btn btn-primary" onclick="goToStep(5)">Next: Semis &amp; Final →</button>
   </div>
-
 </div>
 
-<h2>📊 Analytics</h2>
-
-<div class="analytics-grid">
-
-  <div class="analytics-box">
-    <div class="analytic-label">Most Sick</div>
-    <div class="analytic-value" id="mostSick">-</div>
+<!-- STEP 5: SEMIS + FINAL -->
+<div class="step-page" id="step-5">
+  <h2>Semi-Finals, Bronze &amp; Grand Final</h2>
+  <p class="subtitle">All remaining games are at Stadium Australia, Sydney. SF1: Fri 5 Nov · SF2: Sat 6 Nov · Bronze: Fri 12 Nov · Final: Sat 13 Nov.</p>
+  <div class="matches-grid" id="sf-grid"></div>
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="goToStep(4)">← Back</button>
+    <button class="btn btn-primary" onclick="goToStep(6)">View My Ticket Options 🎟️</button>
   </div>
-
-  <div class="analytics-box">
-    <div class="analytic-label">Least Sick</div>
-    <div class="analytic-value" id="leastSick">-</div>
-  </div>
-
-  <div class="analytics-box">
-    <div class="analytic-label">Total Sick Days</div>
-    <div class="analytic-value" id="totalDays">0</div>
-  </div>
-
 </div>
 
-<br><br>
+<!-- STEP 6: TICKETS -->
+<div class="step-page" id="step-6">
+  <h2>🎟️ Your Ticket Options</h2>
+  <p class="subtitle">Based on your predictions. All prices in AUD incl. GST — presale &amp; application sales phase pricing (2026). Brisbane = ~1hr drive, no accommodation needed.</p>
+  <div id="journey-banner"></div>
+  <div id="ticket-content"></div>
+  <div class="nav-buttons">
+    <button class="btn btn-secondary" onclick="goToStep(5)">← Back to Predictions</button>
+    <button class="btn btn-primary" onclick="window.open('https://tickets.rugbyworldcup.com','_blank')">Buy at tickets.rugbyworldcup.com →</button>
+  </div>
+</div>
 
-<h2>🗓️ Year Overview</h2>
-
-<div class="months" id="months"></div>
+</main>
 
 <script>
+// ──────────────────────────────────────────────
+// DATA
+// ──────────────────────────────────────────────
 
-/* =========================
-   SUPABASE CONFIG
-========================= */
+const POOLS_INIT = {
+  A: ['Australia','New Zealand','Chile','Hong Kong China'],
+  B: ['South Africa','Italy','Georgia','Romania'],
+  C: ['Argentina','Fiji','Spain','Canada'],
+  D: ['Ireland','Scotland','Uruguay','Portugal'],
+  E: ['France','Japan','USA','Samoa'],
+  F: ['England','Wales','Tonga','Zimbabwe']
+};
 
-const SUPABASE_URL =
-  "https://dakljrkkjakylnryofia.supabase.co";
+const FLAGS = {
+  'Australia':'🇦🇺','New Zealand':'🇳🇿','Chile':'🇨🇱','Hong Kong China':'🇭🇰',
+  'South Africa':'🇿🇦','Italy':'🇮🇹','Georgia':'🇬🇪','Romania':'🇷🇴',
+  'Argentina':'🇦🇷','Fiji':'🇫🇯','Spain':'🇪🇸','Canada':'🇨🇦',
+  'Ireland':'🇮🇪','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Uruguay':'🇺🇾','Portugal':'🇵🇹',
+  'France':'🇫🇷','Japan':'🇯🇵','USA':'🇺🇸','Samoa':'🇼🇸',
+  'England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Tonga':'🇹🇴','Zimbabwe':'🇿🇼'
+};
 
-const SUPABASE_ANON_KEY =
-  "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+// Ticket prices: [{ cat, adult, child }] — child: null = adults only
+const PRICES = {
+  brisbanePool: [
+    {cat:'Cat 1',adult:425,child:null},{cat:'Cat 2',adult:330,child:null},
+    {cat:'Cat 3',adult:240,child:120},{cat:'Cat 4',adult:160,child:80},
+    {cat:'Cat 5',adult:95,child:45},{cat:'Cat 6',adult:65,child:30}
+  ],
+  r16: [
+    {cat:'Cat 1',adult:425,child:null},{cat:'Cat 2',adult:330,child:null},
+    {cat:'Cat 3',adult:240,child:120},{cat:'Cat 4',adult:160,child:80},
+    {cat:'Cat 5',adult:95,child:45},{cat:'Cat 6',adult:65,child:30}
+  ],
+  qfBrisbane: [
+    {cat:'Cat 1',adult:690,child:null},{cat:'Cat 2',adult:520,child:null},
+    {cat:'Cat 3',adult:380,child:null},{cat:'Cat 4',adult:230,child:115},
+    {cat:'Cat 5',adult:180,child:90},{cat:'Cat 6',adult:130,child:65}
+  ],
+  qfSydney: [
+    {cat:'Cat 1',adult:890,child:null},{cat:'Cat 2',adult:690,child:null},
+    {cat:'Cat 3',adult:520,child:null},{cat:'Cat 4',adult:380,child:190},
+    {cat:'Cat 5',adult:230,child:115},{cat:'Cat 6',adult:130,child:65}
+  ],
+  sf: [
+    {cat:'Cat 1',adult:1200,child:null},{cat:'Cat 2',adult:930,child:null},
+    {cat:'Cat 3',adult:670,child:null},{cat:'Cat 4',adult:420,child:null},
+    {cat:'Cat 5',adult:250,child:null},{cat:'Cat 6',adult:150,child:null}
+  ],
+  bronze: [
+    {cat:'Cat 1',adult:295,child:145},{cat:'Cat 2',adult:220,child:110},
+    {cat:'Cat 3',adult:150,child:75},{cat:'Cat 4',adult:95,child:45},
+    {cat:'Cat 5',adult:70,child:35},{cat:'Cat 6',adult:50,child:25}
+  ],
+  final: [
+    {cat:'Cat 1',adult:1950,child:null},{cat:'Cat 2',adult:1495,child:null},
+    {cat:'Cat 3',adult:995,child:null},{cat:'Cat 4',adult:630,child:null},
+    {cat:'Cat 5',adult:370,child:null},{cat:'Cat 6',adult:175,child:null}
+  ]
+};
 
-/*
-Get this from:
-Supabase Dashboard
-→ Settings
-→ API
-→ anon public key
-*/
+// ──────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────
 
-const supabase =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+const rankings = JSON.parse(JSON.stringify(POOLS_INIT));
+let selectedThird = []; // [{team, pool}]
+let thirdSlots = {}; // {2:team, 4:team, 5:team, 6:team}
+const W = { r16:{}, qf:{}, sf:{}, final:null, bronze:null };
+let currentStep = 1;
 
-/* =========================
-   GLOBAL STATE
-========================= */
+// ──────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────
 
-let familyMembers = [];
-let sickEntries = [];
+const g1 = p => rankings[p][0];
+const g2 = p => rankings[p][1];
+const g3 = p => rankings[p][2];
+const f = t => FLAGS[t] || '🏳';
+const $ = id => document.getElementById(id);
+const isSA = t => t === 'South Africa';
+const isAUS = t => t === 'Australia';
+const tracked = t => isSA(t) || isAUS(t);
+const fmtP = n => n ? '$' + n.toLocaleString() : '—';
 
-const monthNames = [
-  "January","February","March","April",
-  "May","June","July","August",
-  "September","October","November","December"
+function computeThirdSlots() {
+  // Pools A,B,C,D each have exactly ONE allowed slot:
+  // Pool A→slot 5, B→slot 6, C→slot 2, D→slot 4
+  // Pools E,F are flexible: can fill any remaining slot
+  const fixed = { A:5, B:6, C:2, D:4 };
+  const slots = { 2:null, 4:null, 5:null, 6:null };
+  const used = new Set();
+
+  selectedThird.forEach(({team,pool}) => {
+    if (fixed[pool] !== undefined) {
+      slots[fixed[pool]] = team;
+      used.add(team);
+    }
+  });
+
+  const open = [2,4,5,6].filter(s => !slots[s]);
+  selectedThird.forEach(({team,pool}) => {
+    if ((pool==='E'||pool==='F') && !used.has(team) && open.length) {
+      slots[open.shift()] = team;
+      used.add(team);
+    }
+  });
+  thirdSlots = slots;
+}
+
+// R16 matchup definitions
+const R16 = [
+  {id:1, label:'R16 #1', getHome:()=>g2('C'), getAway:()=>g2('F'),       venue:'Sydney Football Stadium', city:'Sydney',    date:'Sat 23 Oct, 14:15'},
+  {id:2, label:'R16 #2', getHome:()=>g1('A'), getAway:()=>thirdSlots[2]||'?', venue:'Brisbane Stadium (Suncorp)', city:'Brisbane', date:'Sat 23 Oct, 15:45'},
+  {id:3, label:'R16 #3', getHome:()=>g1('E'), getAway:()=>g2('D'),        venue:'Docklands Stadium, Melbourne', city:'Melbourne', date:'Sat 23 Oct, 19:15'},
+  {id:4, label:'R16 #4', getHome:()=>g1('B'), getAway:()=>thirdSlots[4]||'?', venue:'Perth Stadium', city:'Perth',       date:'Sat 23 Oct, 18:45'},
+  {id:5, label:'R16 #5', getHome:()=>g1('C'), getAway:()=>thirdSlots[5]||'?', venue:'Sydney Football Stadium', city:'Sydney',    date:'Sun 24 Oct, 14:15'},
+  {id:6, label:'R16 #6', getHome:()=>g1('D'), getAway:()=>thirdSlots[6]||'?', venue:'Docklands Stadium, Melbourne', city:'Melbourne', date:'Sun 24 Oct, 16:45'},
+  {id:7, label:'R16 #7', getHome:()=>g2('A'), getAway:()=>g2('E'),        venue:'Brisbane Stadium (Suncorp)', city:'Brisbane', date:'Sun 24 Oct, 18:15'},
+  {id:8, label:'R16 #8', getHome:()=>g1('F'), getAway:()=>g2('B'),        venue:'Perth Stadium', city:'Perth',       date:'Sun 24 Oct, 18:45'}
 ];
 
-/* =========================
-   INIT
-========================= */
+const QF = [
+  {id:1, label:'QF1', getHome:()=>W.r16[2]||'?', getAway:()=>W.r16[4]||'?', venue:'Stadium Australia, Sydney',   city:'Sydney',    date:'Sat 30 Oct, 16:45', pk:'qfSydney'},
+  {id:2, label:'QF2', getHome:()=>W.r16[1]||'?', getAway:()=>W.r16[3]||'?', venue:'Brisbane Stadium (Suncorp)', city:'Brisbane', date:'Sat 30 Oct, 18:45', pk:'qfBrisbane'},
+  {id:3, label:'QF3', getHome:()=>W.r16[5]||'?', getAway:()=>W.r16[6]||'?', venue:'Brisbane Stadium (Suncorp)', city:'Brisbane', date:'Sun 31 Oct, 16:00', pk:'qfBrisbane'},
+  {id:4, label:'QF4', getHome:()=>W.r16[7]||'?', getAway:()=>W.r16[8]||'?', venue:'Stadium Australia, Sydney',   city:'Sydney',    date:'Sun 31 Oct, 20:00', pk:'qfSydney'}
+];
 
-init();
+const SF = [
+  {id:1, label:'SF1', getHome:()=>W.qf[1]||'?', getAway:()=>W.qf[2]||'?', venue:'Stadium Australia, Sydney', city:'Sydney', date:'Fri 5 Nov, 20:00', pk:'sf'},
+  {id:2, label:'SF2', getHome:()=>W.qf[3]||'?', getAway:()=>W.qf[4]||'?', venue:'Stadium Australia, Sydney', city:'Sydney', date:'Sat 6 Nov, 20:00', pk:'sf'},
+  {id:'bronze', label:'Bronze Final', getHome:()=>getSFLoser(1), getAway:()=>getSFLoser(2), venue:'Stadium Australia, Sydney', city:'Sydney', date:'Fri 12 Nov, 19:45', pk:'bronze'},
+  {id:'final',  label:'🏆 Grand Final', getHome:()=>W.sf[1]||'?', getAway:()=>W.sf[2]||'?', venue:'Stadium Australia, Sydney', city:'Sydney', date:'Sat 13 Nov, 20:00', pk:'final'}
+];
 
-async function init(){
-
-  await loadMembers();
-
-  await loadEntries();
-
-  renderMembers();
-
-  renderSelect();
-
-  renderMonths();
-
-  renderAnalytics();
-
-  document.getElementById("status").innerHTML =
-    "✅ Connected to shared family database";
-
+function getSFLoser(n) {
+  const h = SF[n-1].getHome(), a = SF[n-1].getAway(), w = W.sf[n];
+  if (!w || w==='?') return '?';
+  return w===h ? a : h;
 }
 
-/* =========================
-   LOAD DATA
-========================= */
+// ──────────────────────────────────────────────
+// STEP 1: POOLS
+// ──────────────────────────────────────────────
 
-async function loadMembers(){
-
-  const { data, error } =
-    await supabase
-      .from("family_members")
-      .select("*")
-      .order("name");
-
-  if(error){
-    console.error(error);
-    return;
+function renderPools() {
+  const grid = $('pools-grid');
+  grid.innerHTML = '';
+  for (const [letter, teams] of Object.entries(rankings)) {
+    const card = document.createElement('div');
+    card.className = 'pool-card';
+    card.innerHTML = `
+      <div class="pool-header">
+        <div class="pool-letter">${letter}</div>
+        <span>Pool ${letter}</span>
+      </div>
+      <div class="pool-list" id="pl-${letter}">
+        ${teams.map((t,i) => teamRowHTML(t, letter, i, teams.length)).join('')}
+      </div>`;
+    grid.appendChild(card);
+    initDragDrop(letter);
   }
-
-  familyMembers = data || [];
-
 }
 
-async function loadEntries(){
-
-  const { data, error } =
-    await supabase
-      .from("sick_entries")
-      .select("*")
-      .order("start_date", { ascending:false });
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  sickEntries = data || [];
-
+function teamRowHTML(team, pool, i, len) {
+  const border = isSA(team) ? 'sa-team' : isAUS(team) ? 'aus-team' : '';
+  const qb = i===0||i===1 ? '<span class="qual-badge q-auto">AUTO Q</span>'
+           : i===2 ? '<span class="qual-badge q-maybe">POSSIBLE</span>'
+           : '<span class="qual-badge q-out">OUT</span>';
+  return `<div class="team-row ${border}" draggable="true" data-team="${team}" data-pool="${pool}" data-idx="${i}">
+    <div class="move-btns">
+      <button class="move-btn" ${i===0?'disabled':''} onclick="mvTeam('${pool}',${i},-1)">▲</button>
+      <button class="move-btn" ${i===len-1?'disabled':''} onclick="mvTeam('${pool}',${i},1)">▼</button>
+    </div>
+    <div class="rank-badge rank-${i+1}">${i+1}</div>
+    <div class="team-flag">${f(team)}</div>
+    <div class="team-name">${team}</div>
+    ${qb}
+  </div>`;
 }
 
-/* =========================
-   ADD MEMBER
-========================= */
-
-async function addMember(){
-
-  const name =
-    document.getElementById("memberName")
-      .value
-      .trim();
-
-  const color =
-    document.getElementById("memberColor")
-      .value;
-
-  if(!name){
-    alert("Please enter a name.");
-    return;
-  }
-
-  const { error } =
-    await supabase
-      .from("family_members")
-      .insert([
-        {
-          name,
-          color
-        }
-      ]);
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  document.getElementById("memberName").value = "";
-
-  await loadMembers();
-
-  renderMembers();
-
-  renderSelect();
-
-  renderAnalytics();
-
+function mvTeam(pool, from, dir) {
+  const a = rankings[pool], to = from + dir;
+  if (to<0||to>=a.length) return;
+  [a[from],a[to]] = [a[to],a[from]];
+  renderPools();
 }
 
-/* =========================
-   ADD SICK PERIOD
-========================= */
-
-async function addSickPeriod(){
-
-  const person =
-    document.getElementById("personSelect").value;
-
-  const startDate =
-    document.getElementById("startDate").value;
-
-  const endDate =
-    document.getElementById("endDate").value;
-
-  const illness =
-    document.getElementById("illness").value;
-
-  if(!person || !startDate || !endDate){
-    alert("Please complete all fields.");
-    return;
-  }
-
-  const { error } =
-    await supabase
-      .from("sick_entries")
-      .insert([
-        {
-          person,
-          illness,
-          start_date:startDate,
-          end_date:endDate
-        }
-      ]);
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  document.getElementById("illness").value = "";
-
-  await loadEntries();
-
-  renderMonths();
-
-  renderAnalytics();
-
-}
-
-/* =========================
-   RENDER MEMBERS
-========================= */
-
-function renderMembers(){
-
-  const container =
-    document.getElementById("members");
-
-  container.innerHTML = "";
-
-  familyMembers.forEach(member => {
-
-    const div = document.createElement("div");
-
-    div.className = "member-pill";
-
-    div.innerHTML = `
-      <div
-        class="dot"
-        style="background:${member.color}"
-      ></div>
-
-      ${member.name}
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-/* =========================
-   RENDER SELECT
-========================= */
-
-function renderSelect(){
-
-  const select =
-    document.getElementById("personSelect");
-
-  select.innerHTML = "";
-
-  familyMembers.forEach(member => {
-
-    const option =
-      document.createElement("option");
-
-    option.value = member.name;
-
-    option.textContent = member.name;
-
-    select.appendChild(option);
-
-  });
-
-}
-
-/* =========================
-   RENDER MONTHS
-========================= */
-
-function renderMonths(){
-
-  const container =
-    document.getElementById("months");
-
-  container.innerHTML = "";
-
-  for(let month=0; month<12; month++){
-
-    const monthDiv =
-      document.createElement("div");
-
-    monthDiv.className = "month";
-
-    let html = `<h3>${monthNames[month]}</h3>`;
-
-    const filtered =
-      sickEntries.filter(entry => {
-
-        const entryMonth =
-          new Date(entry.start_date)
-            .getMonth();
-
-        return entryMonth === month;
-
-      });
-
-    if(filtered.length === 0){
-
-      html += `
-        <p style="color:#777;">
-          No sickness recorded.
-        </p>
-      `;
-
-    }
-
-    filtered.forEach(entry => {
-
-      const member =
-        familyMembers.find(
-          m => m.name === entry.person
-        );
-
-      const start =
-        new Date(entry.start_date);
-
-      const end =
-        new Date(entry.end_date);
-
-      const days =
-        Math.floor(
-          (end - start)
-          / (1000*60*60*24)
-        ) + 1;
-
-      html += `
-        <div
-          class="entry"
-          style="background:${member?.color || "#333"}"
-        >
-
-          ${entry.person}
-
-          <div class="small">
-            ${entry.start_date}
-            →
-            ${entry.end_date}
-          </div>
-
-          <div class="small">
-            ${days} sick day(s)
-          </div>
-
-          ${
-            entry.illness
-            ? `<div class="small">${entry.illness}</div>`
-            : ""
-          }
-
-        </div>
-      `;
-
+let dragTeam=null, dragPool=null;
+function initDragDrop(pool) {
+  const list = $(`pl-${pool}`);
+  list.querySelectorAll('.team-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragTeam = row.dataset.team; dragPool = row.dataset.pool;
+      row.classList.add('dragging'); e.dataTransfer.effectAllowed='move';
     });
-
-    monthDiv.innerHTML = html;
-
-    container.appendChild(monthDiv);
-
-  }
-
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      list.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', e => { e.preventDefault(); if(row.dataset.pool===dragPool) row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault(); row.classList.remove('drag-over');
+      if (dragPool !== row.dataset.pool) return;
+      const from = rankings[dragPool].indexOf(dragTeam), to = parseInt(row.dataset.idx);
+      if (from===to) return;
+      rankings[dragPool].splice(from,1); rankings[dragPool].splice(to,0,dragTeam);
+      renderPools();
+    });
+  });
 }
 
-/* =========================
-   ANALYTICS
-========================= */
+// ──────────────────────────────────────────────
+// STEP 2: THIRD PLACE
+// ──────────────────────────────────────────────
 
-function renderAnalytics(){
+function renderThirdPlace() {
+  selectedThird = [];
+  const grid = $('third-grid');
+  grid.innerHTML = '';
+  updateThirdCount();
 
-  let totals = {};
-
-  familyMembers.forEach(member => {
-    totals[member.name] = 0;
+  'ABCDEF'.split('').forEach(pool => {
+    const team = g3(pool);
+    const card = document.createElement('div');
+    card.className = 'third-card';
+    card.dataset.team = team; card.dataset.pool = pool;
+    card.innerHTML = `
+      <div class="team-flag" style="font-size:1.8rem">${f(team)}</div>
+      <div class="tinfo">
+        <div class="tpool">Pool ${pool} — 3rd place</div>
+        <div class="tname">${team}</div>
+      </div>
+      <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+    card.addEventListener('click', () => toggleThird(card));
+    grid.appendChild(card);
   });
-
-  sickEntries.forEach(entry => {
-
-    const start =
-      new Date(entry.start_date);
-
-    const end =
-      new Date(entry.end_date);
-
-    const days =
-      Math.floor(
-        (end - start)
-        / (1000*60*60*24)
-      ) + 1;
-
-    totals[entry.person] += days;
-
-  });
-
-  const sorted =
-    Object.entries(totals)
-      .sort((a,b)=>b[1]-a[1]);
-
-  if(sorted.length > 0){
-
-    document.getElementById("mostSick")
-      .innerHTML =
-      `${sorted[0][0]} (${sorted[0][1]} days)`;
-
-    document.getElementById("leastSick")
-      .innerHTML =
-      `${sorted[sorted.length-1][0]}
-       (${sorted[sorted.length-1][1]} days)`;
-
-  }
-
-  const total =
-    Object.values(totals)
-      .reduce((a,b)=>a+b,0);
-
-  document.getElementById("totalDays")
-    .innerHTML = total;
-
 }
 
+function toggleThird(card) {
+  const team = card.dataset.team, pool = card.dataset.pool;
+  if (card.classList.contains('selected')) {
+    card.classList.remove('selected');
+    selectedThird = selectedThird.filter(e=>e.team!==team);
+  } else {
+    if (selectedThird.length >= 4) return;
+    card.classList.add('selected');
+    selectedThird.push({team, pool});
+  }
+  const maxed = selectedThird.length >= 4;
+  document.querySelectorAll('.third-card').forEach(c => {
+    c.classList.toggle('disabled', maxed && !c.classList.contains('selected'));
+  });
+  updateThirdCount();
+}
+
+function updateThirdCount() {
+  const n = selectedThird.length;
+  $('third-counter').textContent = `Select 4 teams — ${n} of 4 selected`;
+  $('third-counter').style.color = n===4 ? '#10b981' : 'var(--muted)';
+  $('btn-next-3').disabled = n!==4;
+}
+
+// ──────────────────────────────────────────────
+// MATCH CARD BUILDER
+// ──────────────────────────────────────────────
+
+function buildMatchCard(fixture, winnersObj, key, isBrisbane) {
+  const home = fixture.getHome(), away = fixture.getAway();
+  const tbd_h = !home||home==='?', tbd_a = !away||away==='?';
+  const card = document.createElement('div');
+  card.className = `match-card${isBrisbane?' brisbane-game':''}`;
+
+  const tagH = isSA(home)?`<span class="tag sa-tag">🇿🇦 Springboks</span>`:isAUS(home)?`<span class="tag aus-tag">🇦🇺 Wallabies</span>`:'';
+  const tagA = isSA(away)?`<span class="tag sa-tag">🇿🇦 Springboks</span>`:isAUS(away)?`<span class="tag aus-tag">🇦🇺 Wallabies</span>`:'';
+
+  const brisbadge = isBrisbane ? `<span style="color:var(--gold);font-size:0.7rem;font-weight:bold">🚗 BRISBANE</span>` : `<span style="font-size:0.7rem;color:var(--muted)">${fixture.city||''}</span>`;
+
+  card.innerHTML = `
+    <div class="match-header">
+      <span class="match-id">${fixture.label}</span>
+      <span style="font-size:0.7rem">${fixture.date}</span>
+      ${brisbadge}
+    </div>
+    <div class="match-teams">
+      <button class="team-btn${winnersObj[key]===home&&!tbd_h?' selected':''}${tbd_h?' tbd':''}" data-team="${home}">
+        <span style="font-size:1.15rem">${f(home)}</span>
+        <span>${tbd_h?'TBD':home}</span>${tagH}
+      </button>
+      <div class="vs-div">VS</div>
+      <button class="team-btn${winnersObj[key]===away&&!tbd_a?' selected':''}${tbd_a?' tbd':''}" data-team="${away}">
+        <span style="font-size:1.15rem">${f(away)}</span>
+        <span>${tbd_a?'TBD':away}</span>${tagA}
+      </button>
+    </div>`;
+
+  card.querySelectorAll('.team-btn:not(.tbd)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.team;
+      if (!t||t==='?') return;
+      winnersObj[key] = t;
+      renderCurrentKnockout();
+    });
+  });
+  return card;
+}
+
+let activeKnockoutRender = null;
+
+function renderCurrentKnockout() {
+  if (activeKnockoutRender === 'r16') renderR16();
+  else if (activeKnockoutRender === 'qf') renderQF();
+  else if (activeKnockoutRender === 'sf') renderSF();
+}
+
+function renderR16() {
+  activeKnockoutRender = 'r16';
+  const grid = $('r16-grid'); grid.innerHTML = '';
+  R16.forEach(f => {
+    const isBris = f.city === 'Brisbane';
+    grid.appendChild(buildMatchCard(f, W.r16, f.id, isBris));
+  });
+}
+
+function renderQF() {
+  activeKnockoutRender = 'qf';
+  const grid = $('qf-grid'); grid.innerHTML = '';
+  QF.forEach(f => {
+    const isBris = f.city === 'Brisbane';
+    grid.appendChild(buildMatchCard(f, W.qf, f.id, isBris));
+  });
+}
+
+function renderSF() {
+  activeKnockoutRender = 'sf';
+  const grid = $('sf-grid'); grid.innerHTML = '';
+  SF.forEach(f => {
+    const wObj = f.id==='final'?{final:W.final}:f.id==='bronze'?{bronze:W.bronze}:W.sf;
+    const key = f.id==='final'?'final':f.id==='bronze'?'bronze':f.id;
+    if (f.id==='final') { const card=buildMatchCard(f,{final:W.final},'final',false); grid.appendChild(card); }
+    else if (f.id==='bronze') { const card=buildMatchCard(f,{bronze:W.bronze},'bronze',false); grid.appendChild(card); }
+    else grid.appendChild(buildMatchCard(f, W.sf, f.id, false));
+  });
+}
+
+// Override SF build to handle bronze/final state correctly
+function renderSF() {
+  activeKnockoutRender = 'sf';
+  const grid = $('sf-grid'); grid.innerHTML = '';
+
+  // SF1
+  const sf1card = buildMatchCard(SF[0], W.sf, 1, false);
+  grid.appendChild(sf1card);
+  // SF2
+  const sf2card = buildMatchCard(SF[1], W.sf, 2, false);
+  grid.appendChild(sf2card);
+
+  // Bronze
+  const bronzeFixture = { ...SF[2], getHome: getSFLoser.bind(null,1), getAway: getSFLoser.bind(null,2) };
+  const bronzeCard = buildBronzeFinalCard(bronzeFixture);
+  grid.appendChild(bronzeCard);
+
+  // Grand Final
+  const finalCard = buildGrandFinalCard(SF[3]);
+  grid.appendChild(finalCard);
+}
+
+function buildBronzeFinalCard(fixture) {
+  const home = getSFLoser(1), away = getSFLoser(2);
+  const fake = { ...fixture, getHome:()=>home, getAway:()=>away };
+  const bwObj = {b: W.bronze};
+  const card = buildMatchCardRaw(fake, bwObj, 'b', false);
+  card.querySelectorAll('.team-btn:not(.tbd)').forEach(btn => {
+    btn.addEventListener('click', () => { W.bronze = btn.dataset.team; renderSF(); });
+  });
+  return card;
+}
+
+function buildGrandFinalCard(fixture) {
+  const bwObj = {f: W.final};
+  const card = buildMatchCardRaw(fixture, bwObj, 'f', false);
+  card.querySelectorAll('.team-btn:not(.tbd)').forEach(btn => {
+    btn.addEventListener('click', () => { W.final = btn.dataset.team; renderSF(); });
+  });
+  return card;
+}
+
+function buildMatchCardRaw(fixture, wObj, key, isBrisbane) {
+  const home = fixture.getHome(), away = fixture.getAway();
+  const tbd_h = !home||home==='?', tbd_a = !away||away==='?';
+  const card = document.createElement('div');
+  card.className = `match-card${isBrisbane?' brisbane-game':''}`;
+  const tagH = isSA(home)?`<span class="tag sa-tag">🇿🇦 Springboks</span>`:isAUS(home)?`<span class="tag aus-tag">🇦🇺 Wallabies</span>`:'';
+  const tagA = isSA(away)?`<span class="tag sa-tag">🇿🇦 Springboks</span>`:isAUS(away)?`<span class="tag aus-tag">🇦🇺 Wallabies</span>`:'';
+  card.innerHTML = `
+    <div class="match-header">
+      <span class="match-id">${fixture.label}</span>
+      <span style="font-size:0.7rem">${fixture.date}</span>
+      <span style="font-size:0.7rem;color:var(--muted)">Sydney</span>
+    </div>
+    <div class="match-teams">
+      <button class="team-btn${wObj[key]===home&&!tbd_h?' selected':''}${tbd_h?' tbd':''}" data-team="${home}">
+        <span style="font-size:1.15rem">${f(home)}</span>
+        <span>${tbd_h?'TBD':home}</span>${tagH}
+      </button>
+      <div class="vs-div">VS</div>
+      <button class="team-btn${wObj[key]===away&&!tbd_a?' selected':''}${tbd_a?' tbd':''}" data-team="${away}">
+        <span style="font-size:1.15rem">${f(away)}</span>
+        <span>${tbd_a?'TBD':away}</span>${tagA}
+      </button>
+    </div>`;
+  return card;
+}
+
+// ──────────────────────────────────────────────
+// STEP 6: TICKET EXPLORER
+// ──────────────────────────────────────────────
+
+function renderTickets() {
+  renderJourneyBanner();
+  const content = $('ticket-content');
+  content.innerHTML = '';
+
+  // ── POOL GAMES ──
+  const poolSec = sec('🚗 Brisbane Pool Games — No Accommodation Needed!');
+  poolSec.appendChild(gameCard({
+    matchup:`🇿🇦 South Africa v 🇬🇪 Georgia`, border:'sa-border',
+    meta:'Match #21 · Pool B · Sun 10 Oct 2027, 16:45 · Brisbane Stadium (Suncorp) · ~1hr drive',
+    tag:'sa', pk:'brisbanePool'
+  }));
+  poolSec.appendChild(gameCard({
+    matchup:`🇦🇺 Australia v 🇨🇱 Chile`, border:'aus-border',
+    meta:'Match #29 · Pool A · Sat 16 Oct 2027, 15:10 · Brisbane Stadium (Suncorp) · ~1hr drive',
+    tag:'aus', pk:'brisbanePool'
+  }));
+  content.appendChild(poolSec);
+
+  // ── R16 BRISBANE ──
+  const r16Sec = sec('Round of 16 — Brisbane Games (23–24 Oct) · Same pricing as Pool games');
+  const r16_2h = g1('A'), r16_2a = thirdSlots[2]||'?';
+  const r16_7h = g2('A'), r16_7a = g2('E');
+  r16Sec.appendChild(gameCard({
+    matchup:`${f(r16_2h)} ${r16_2h} v ${f(r16_2a)} ${r16_2a}`,
+    border: tracked(r16_2h)||tracked(r16_2a) ? (isSA(r16_2h)||isSA(r16_2a)?'sa-border':'aus-border') : '',
+    meta:`R16 #2 · Sat 23 Oct, 15:45 · Brisbane Stadium (Suncorp) · 1st Pool A vs Best 3rd (C/E/F)`,
+    tag: isSA(r16_2h)||isSA(r16_2a)?'sa':isAUS(r16_2h)||isAUS(r16_2a)?'aus':null,
+    pk:'r16'
+  }));
+  r16Sec.appendChild(gameCard({
+    matchup:`${f(r16_7h)} ${r16_7h} v ${f(r16_7a)} ${r16_7a}`,
+    border: tracked(r16_7h)||tracked(r16_7a) ? (isSA(r16_7h)||isSA(r16_7a)?'sa-border':'aus-border') : '',
+    meta:`R16 #7 · Sun 24 Oct, 18:15 · Brisbane Stadium (Suncorp) · 2nd Pool A vs 2nd Pool E`,
+    tag: isSA(r16_7h)||isSA(r16_7a)?'sa':isAUS(r16_7h)||isAUS(r16_7a)?'aus':null,
+    pk:'r16'
+  }));
+  content.appendChild(r16Sec);
+
+  // ── QUARTER FINALS ──
+  const qfSec = sec('⚡ Quarter Finals (30–31 Oct) — QF2 & QF3 in Brisbane!');
+  QF.forEach(qf => {
+    const home = qf.getHome(), away = qf.getAway();
+    const isBris = qf.city==='Brisbane';
+    const tsa = isSA(home)||isSA(away), taus = isAUS(home)||isAUS(away);
+    qfSec.appendChild(gameCard({
+      matchup:`${f(home)} ${home||'TBD'} v ${f(away)} ${away||'TBD'}`,
+      border: tsa?'sa-border':taus?'aus-border':isBris?'gold-border':'',
+      meta:`${qf.label} · ${qf.date} · ${qf.venue}${isBris?' · 🚗 1hr drive from GC':' · ✈️ Flight to Sydney required'}`,
+      tag: tsa?'sa':taus?'aus':null,
+      pk: qf.pk
+    }));
+  });
+  content.appendChild(qfSec);
+
+  // ── SEMI FINALS ──
+  const sfSec = sec('🔥 Semi-Finals (5–6 Nov) · Stadium Australia, Sydney · ✈️ Flight required');
+  SF.slice(0,2).forEach(sf => {
+    const home = sf.getHome(), away = sf.getAway();
+    const tsa = isSA(home)||isSA(away), taus = isAUS(home)||isAUS(away);
+    sfSec.appendChild(gameCard({
+      matchup:`${f(home)} ${home||'TBD'} v ${f(away)} ${away||'TBD'}`,
+      border: tsa?'sa-border':taus?'aus-border':tsa||taus?'gold-border':'',
+      meta:`${sf.label} · ${sf.date} · Stadium Australia, Sydney`,
+      tag: tsa?'sa':taus?'aus':null,
+      pk:'sf'
+    }));
+  });
+  content.appendChild(sfSec);
+
+  // ── FINALS WEEKEND ──
+  const finSec = sec('🏆 Finals Weekend (12–13 Nov) · Stadium Australia, Sydney · ✈️ Flight required');
+
+  const bh = getSFLoser(1), ba = getSFLoser(2);
+  const bsa = isSA(bh)||isSA(ba), baus = isAUS(bh)||isAUS(ba);
+  finSec.appendChild(gameCard({
+    matchup:`${f(bh)} ${bh||'TBD'} v ${f(ba)} ${ba||'TBD'}`,
+    border: bsa?'sa-border':baus?'aus-border':'',
+    meta:`Bronze Final · Fri 12 Nov, 19:45 · Stadium Australia, Sydney · Consolation — 3rd place play-off`,
+    tag: bsa?'sa':baus?'aus':null,
+    pk:'bronze'
+  }));
+
+  const fh = W.sf[1]||'TBD', fa = W.sf[2]||'TBD';
+  const fsa = isSA(fh)||isSA(fa), faus = isAUS(fh)||isAUS(fa);
+  finSec.appendChild(gameCard({
+    matchup:`${f(fh)} ${fh} v ${f(fa)} ${fa}`,
+    border: fsa?'sa-border':faus?'aus-border':'gold-border',
+    meta:`Grand Final · Sat 13 Nov, 20:00 · Stadium Australia, Sydney · The biggest game in world rugby 🏆`,
+    tag: fsa?'sa':faus?'aus':null,
+    pk:'final'
+  }));
+  content.appendChild(finSec);
+
+  // Budget summary
+  content.appendChild(budgetSummary());
+}
+
+function sec(title) {
+  const d = document.createElement('div');
+  d.className = 'ticket-section';
+  d.innerHTML = `<h3>${title}</h3>`;
+  return d;
+}
+
+function gameCard({matchup, border, meta, tag, pk}) {
+  const p = PRICES[pk];
+  const cheapest = Math.min(...p.map(x=>x.adult));
+  const tagHTML = tag==='sa' ? '<span class="tag sa-tag">🇿🇦 Springboks game</span>'
+                : tag==='aus' ? '<span class="tag aus-tag">🇦🇺 Wallabies game</span>' : '';
+  const pricesHTML = p.map(x => `
+    <div class="price-tile${x.adult===cheapest?' cheapest':''}">
+      <div class="ptcat">${x.cat}</div>
+      <div class="ptadult">${fmtP(x.adult)}</div>
+      ${x.child ? `<div class="ptchild">Child: ${fmtP(x.child)}</div>` : '<div class="ptno">Adults only</div>'}
+    </div>`).join('');
+  const div = document.createElement('div');
+  div.className = `game-card ${border}`;
+  div.innerHTML = `
+    <div class="game-top">
+      <div>
+        <div class="game-matchup">${matchup}</div>
+        <div class="game-meta">${meta}</div>
+      </div>
+      ${tagHTML}
+    </div>
+    <div class="price-grid">${pricesHTML}</div>`;
+  return div;
+}
+
+function renderJourneyBanner() {
+  const banner = $('journey-banner');
+  banner.innerHTML = `
+    <div class="journey-banner">
+      <div class="tj"><h4 class="sa-col">🇿🇦 Springboks Journey</h4><div class="journey-steps">${teamJourney('South Africa')}</div></div>
+      <div class="tj"><h4 class="aus-col">🇦🇺 Wallabies Journey</h4><div class="journey-steps">${teamJourney('Australia')}</div></div>
+    </div>`;
+}
+
+function teamJourney(team) {
+  const steps = [];
+  const pool = Object.keys(rankings).find(p=>rankings[p].includes(team));
+  const rank = rankings[pool].indexOf(team)+1;
+
+  if (rank<=2) steps.push(`<span class="jstep won">Pool: ${rank===1?'1st':'2nd'} ✓</span>`);
+  else if (rank===3 && selectedThird.some(e=>e.team===team)) steps.push(`<span class="jstep won">Pool: 3rd (qualified) ✓</span>`);
+  else { steps.push(`<span class="jstep out">Pool: ${rank}th — Eliminated</span>`); return steps.join(''); }
+
+  const r16f = R16.find(r=>r.getHome()===team||r.getAway()===team);
+  if (!r16f) { steps.push(`<span class="jstep">R16: Not in bracket yet</span>`); return steps.join(''); }
+  const r16w = W.r16[r16f.id];
+  if (!r16w) { steps.push(`<span class="jstep">R16: TBD</span>`); return steps.join(''); }
+  if (r16w!==team) { steps.push(`<span class="jstep out">R16: Eliminated</span>`); return steps.join(''); }
+  steps.push(`<span class="jstep won">R16: Won ✓</span>`);
+
+  const qff = QF.find(q=>q.getHome()===team||q.getAway()===team);
+  if (!qff) { steps.push(`<span class="jstep">QF: TBD</span>`); return steps.join(''); }
+  const qfw = W.qf[qff.id];
+  if (!qfw) { steps.push(`<span class="jstep">QF: TBD</span>`); return steps.join(''); }
+  if (qfw!==team) { steps.push(`<span class="jstep out">QF: Eliminated</span>`); return steps.join(''); }
+  steps.push(`<span class="jstep won">QF: Won ✓</span>`);
+
+  const sff = SF.slice(0,2).find(s=>s.getHome()===team||s.getAway()===team);
+  if (!sff) { steps.push(`<span class="jstep">SF: TBD</span>`); return steps.join(''); }
+  const sfw = W.sf[sff.id];
+  if (!sfw) { steps.push(`<span class="jstep">SF: TBD</span>`); return steps.join(''); }
+  if (sfw!==team) { steps.push(`<span class="jstep out">SF: → Bronze Final</span>`); return steps.join(''); }
+  steps.push(`<span class="jstep won">SF: Won ✓</span>`);
+
+  if (W.final===team) steps.push(`<span class="jstep won">🏆 WORLD CHAMPIONS!</span>`);
+  else if (W.final) steps.push(`<span class="jstep out">Final: Runner-up</span>`);
+  else steps.push(`<span class="jstep">Final: TBD</span>`);
+
+  return steps.join('');
+}
+
+function budgetSummary() {
+  const div = document.createElement('div');
+  div.className = 'budget-box';
+  div.innerHTML = `
+    <h3>💡 Budget Guide for Gold Coast Fans</h3>
+    <div class="budget-row">
+      <span class="budget-game">🚗 Brisbane pool games (SA + AUS)</span>
+      <span class="budget-note">Cat 6 adult: $65 each · Cat 5: $95 · Cat 3: $240</span>
+      <span class="budget-price">From $65/person</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">🚗 R16 at Brisbane (if your teams are in R16 #2 or #7)</span>
+      <span class="budget-note">Same pricing as pool games · no accommodation</span>
+      <span class="budget-price">From $65/person</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">🚗 QF at Brisbane (QF2 or QF3)</span>
+      <span class="budget-note">Cat 6: $130 · Cat 5: $180 · Cat 3: $380</span>
+      <span class="budget-price">From $130/person</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">✈️ QF at Sydney (QF1 or QF4) · flights + accom on top</span>
+      <span class="budget-note">Cat 6: $130 · Cat 4: $380 · Cat 1: $890</span>
+      <span class="budget-price">From $130 + travel</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">✈️ Semi-Final at Sydney · all 6 categories</span>
+      <span class="budget-note">Cat 6: $150 · Cat 4: $420 · Cat 1: $1,200 · no child prices</span>
+      <span class="budget-price">From $150 + travel</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">✈️ Bronze Final · Stadium Australia, Sydney</span>
+      <span class="budget-note">Great value · Cat 6: $50 adult / $25 child</span>
+      <span class="budget-price">From $50/person</span>
+    </div>
+    <div class="budget-row">
+      <span class="budget-game">✈️ 🏆 Grand Final · Stadium Australia, Sydney</span>
+      <span class="budget-note">Cat 6: $175 · Cat 4: $630 · Cat 1: $1,950 · no child prices</span>
+      <span class="budget-price">From $175 + travel</span>
+    </div>
+    <div style="margin-top:14px;font-size:0.8rem;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--light)">Note:</strong> Prices shown are for the presale &amp; application sales phase (2026 pricing in AUD, incl. GST).
+      Other sales phases may have different prices. Check <a href="https://tickets.rugbyworldcup.com" style="color:var(--gold)">tickets.rugbyworldcup.com</a> for the latest info.
+    </div>`;
+  return div;
+}
+
+// ──────────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────────
+
+function goToStep(step) {
+  if (step===3 && selectedThird.length!==4) { goToStep(2); return; }
+
+  document.querySelectorAll('.step-page').forEach(p=>p.classList.remove('active'));
+  $(`step-${step}`).classList.add('active');
+
+  document.querySelectorAll('.step-indicator').forEach((el,i) => {
+    const s = i+1;
+    el.classList.toggle('active', s===step);
+    el.classList.toggle('done', s<step);
+    el.querySelector('.step-dot').classList.toggle('active', s===step);
+    el.querySelector('.step-dot').classList.toggle('done', s<step);
+  });
+
+  currentStep = step;
+
+  if (step===2) renderThirdPlace();
+  if (step===3) { computeThirdSlots(); renderR16(); }
+  if (step===4) renderQF();
+  if (step===5) renderSF();
+  if (step===6) renderTickets();
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+renderPools();
 </script>
-
 </body>
 </html>
